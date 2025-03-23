@@ -1,10 +1,19 @@
 #include "JsonTreePlugin.h"
+#include <QVBoxLayout>
+#include <QTreeWidget
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 JsonTreePlugin::JsonTreePlugin() : mainWidget(nullptr), service(nullptr) {
     // Constructor initializes pointers to nullptr (prevents uninitialized memory issues)
 }
 
 JsonTreePlugin::~JsonTreePlugin() {
+
+
+}
     
 // Returns the version of the plugin
 void JsonTreePlugin::version(int& major, int& minor, int& bugfix) const {
@@ -25,7 +34,26 @@ QWidget* JsonTreePlugin::widget() {
 
 // Called when the plugin is opened in CubeGUI
 void JsonTreePlugin::opened(cubepluginapi::PluginServices* service) {
-    this->service = service;  // Store the service pointer for later use
+    this->service = service;
 
-    mainWidget = new QWidget();  // Create a new main widget
+   // Load JSON Data
+    QFile file("system_tree.json");  // Open JSON file
+    if (file.open(QIODevice::ReadOnly)) {  // Ensure file is successfully opened
+        QByteArray jsonData = file.readAll();
+        file.close();
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+        if (!jsonDoc.isNull() && jsonDoc.isObject()) {  // Check if JSON is valid
+            QJsonObject rootObject = jsonDoc.object();
+            for (auto key : rootObject.keys()) {  // Iterate through JSON object keys
+                QTreeWidgetItem* item = new QTreeWidgetItem(treeWidget);
+                item->setText(0, key);  //  Set key
+                item->setText(1, rootObject[key].toString());  // Set value
+                treeWidget->addTopLevelItem(item);
+            }
+        }
+    }
+
+    layout->addWidget(treeWidget);
+    mainWidget->setLayout(layout);
 }
