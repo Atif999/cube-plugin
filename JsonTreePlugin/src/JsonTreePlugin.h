@@ -14,9 +14,13 @@ class JsonTreePlugin : public QObject, public cubepluginapi::TabInterface
     Q_INTERFACES(cubepluginapi::TabInterface)  // Registers the plugin as a CubeGUI tab
     Q_PLUGIN_METADATA(IID "org.scalasca.cubegui.JsonTreePlugin")  // Defines the plugin metadata
 
+private:
+    QTreeWidget* treeWidget;  //  Store tree widget for reuse
+    void loadJsonTree();  // New function for loading JSON
+
 public:
-    explicit JsonTreePlugin();   // ✅ Constructor
-    virtual ~JsonTreePlugin();   // ✅ Destructor
+    explicit JsonTreePlugin();   // Constructor
+    virtual ~JsonTreePlugin();   //  Destructor
 
     // Implement required methods from the TabInterface
     void version(int& major, int& minor, int& bugfix) const override;  // Returns plugin version

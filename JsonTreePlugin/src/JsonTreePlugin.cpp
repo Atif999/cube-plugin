@@ -36,24 +36,41 @@ QWidget* JsonTreePlugin::widget() {
 void JsonTreePlugin::opened(cubepluginapi::PluginServices* service) {
     this->service = service;
 
-   // Load JSON Data
-    QFile file("system_tree.json");  // Open JSON file
-    if (file.open(QIODevice::ReadOnly)) {  // Ensure file is successfully opened
-        QByteArray jsonData = file.readAll();
-        file.close();
+    
+    mainWidget = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(mainWidget);
+    treeWidget = new QTreeWidget();
+    treeWidget->setHeaderLabels({"Key", "Value"});
 
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
-        if (!jsonDoc.isNull() && jsonDoc.isObject()) {  // Check if JSON is valid
-            QJsonObject rootObject = jsonDoc.object();
-            for (auto key : rootObject.keys()) {  // Iterate through JSON object keys
-                QTreeWidgetItem* item = new QTreeWidgetItem(treeWidget);
-                item->setText(0, key);  //  Set key
-                item->setText(1, rootObject[key].toString());  // Set value
-                treeWidget->addTopLevelItem(item);
-            }
-        }
-    }
+    loadJsonTree();  //New function for JSON loading
 
     layout->addWidget(treeWidget);
     mainWidget->setLayout(layout);
+
+}
+
+// New function to handle JSON loading
+void JsonTreePlugin::loadJsonTree() {
+    QFile file("system_tree.json");
+    if (!file.open(QIODevice::ReadOnly)) {  // Ensure file is successfully opened
+        qWarning("Failed to open JSON file.");
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    if (jsonDoc.isNull() || !jsonDoc.isObject()) {  //  Ensure JSON is valid
+        qWarning("Invalid JSON format.");
+        return;
+    }
+
+    QJsonObject rootObject = jsonDoc.object();
+    for (auto key : rootObject.keys()) {  // Iterate through JSON keys
+        QTreeWidgetItem* item = new QTreeWidgetItem(treeWidget);
+        item->setText(0, key);  // Set key
+        item->setText(1, rootObject[key].toString());  // Set value
+        treeWidget->addTopLevelItem(item);
+    }
 }
